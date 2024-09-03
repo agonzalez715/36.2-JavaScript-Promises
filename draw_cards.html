@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Deck of Cards</title>
+</head>
+<body>
+    <!-- Button to trigger drawing a card from the deck -->
+    <button id="drawCard">Draw Card</button>
+    <!-- Div element where the drawn card's information will be displayed -->
+    <div id="cardOutput"></div>
+
+    <script>
+        // Initialize deckId variable to hold the deck identifier
+        let deckId = null;
+
+        // Add a click event listener to the button with id 'drawCard'
+        document.getElementById('drawCard').addEventListener('click', function() {
+            // Check if deckId is null, indicating that a deck hasn't been created/shuffled yet
+            if (!deckId) {
+                // Fetch request to create and shuffle a new deck
+                fetch('https://deckofcardsapi.com/api/deck/new/shuffle/')
+                    .then(response => response.json()) // Parse the JSON response
+                    .then(data => {
+                        deckId = data.deck_id; // Store the deck ID from the response
+                        drawCard(); // Call drawCard function to draw the first card
+                    });
+            } else {
+                drawCard(); // If a deck already exists, just draw a card
+            }
+        });
+
+        // Define the drawCard function that draws a card from the existing deck
+        function drawCard() {
+            // Fetch request to draw a single card from the deck specified by deckId
+            fetch(`https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=1`)
+                .then(response => response.json()) // Parse the JSON response
+                .then(data => {
+                    // Check if there are any cards left to draw
+                    if (data.cards.length > 0) {
+                        const card = data.cards[0]; // Get the drawn card from the array
+                        // Display the value and suit of the drawn card in the 'cardOutput' div
+                        document.getElementById('cardOutput').innerText = `${card.value} of ${card.suit.toLowerCase()}`;
+                    } else {
+                        // If no cards are left, indicate this in the 'cardOutput' div
+                        document.getElementById('cardOutput').innerText = 'No more cards in the deck';
+                        // Disable the draw card button as there are no cards left to draw
+                        document.getElementById('drawCard').disabled = true;
+                    }
+                })
+                .catch(err => console.error('Error drawing a card:', err)); // Log any errors that occur during the fetch operation
+        }
+    </script>
+</body>
+</html>
